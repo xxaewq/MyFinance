@@ -9,8 +9,10 @@ namespace Finance.Repository.Abstraction
 {
     public interface ITypeRepository
     {
-        Task CreateType(MstType type);
-        Task<List<MstType>> GetAllTypes();
-        Task<MstType> GetTypeById(Guid id);
+        Task<bool> CreateType(MstType type, CancellationToken token);
+        Task<bool> DeleteType(Guid id, CancellationToken token);
+        Task<List<MstType>> GetAllTypes(CancellationToken token);
+        Task<MstType> GetTypeById(Guid id, CancellationToken token);
+        Task<bool> UpdateType(MstType type, CancellationToken token);
     }
 }

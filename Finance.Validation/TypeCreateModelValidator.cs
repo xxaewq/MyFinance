@@ -1,22 +1,33 @@
-﻿using Finance.Shared.Models;
+﻿using Finance.Repository.SqlServer;
+using Finance.Shared.Models.MstType;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
-namespace Finance.Validation
+namespace Finance.Validation;
+
+public class TypeCreateModelValidator : AbstractValidator<MstTypeCreateModel>
 {
-    public class TypeCreateModelValidator : AbstractValidator<MstTypeCreateModel>
+    private readonly SqlServerDatabaseHelper _helper;
+    public TypeCreateModelValidator(SqlServerDatabaseHelper helper)
     {
-        public TypeCreateModelValidator()
+        _helper = helper;
+
+        RuleFor(x => x.TypeName)
+            .NotEmpty().WithMessage("Type name is required.")
+            .MaximumLength(30).WithMessage("Type name must be less than 30 characters.")
+            .MustAsync(BeUniqueNameAsync).WithMessage("Type name must be unique.");
+        RuleFor(x => x.Description)
+            .MaximumLength(50).WithMessage("Description must be less than 50 characters.");
+    }
+
+    private async Task<bool> BeUniqueNameAsync(string typeName, CancellationToken token)
+    {
+        string sql = "SELECT TOP 1 1 FROM MstType WHERE TypeName = @TypeName";
+        var parameters = new[]
         {
-            RuleFor(x => x.TypeName)
-                .NotEmpty().WithMessage("Type name is required.")
-                .Length(1, 30).WithMessage("Type name must be between 1 and 30 characters.");
-            RuleFor(x => x.Description)
-                .MaximumLength(50).WithMessage("Description must be less than 50 characters.");
-        }
+            new SqlParameter("@TypeName", typeName)
+        };
+        int result = await _helper.ExecuteScalar<int>(sql,token, parameters);
+        return result == 0;
     }
 }

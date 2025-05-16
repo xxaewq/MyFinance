@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Finance.Shared.Models
+namespace Finance.Shared.Models.MstType
 {
     public class MstTypeCreateModel
     {

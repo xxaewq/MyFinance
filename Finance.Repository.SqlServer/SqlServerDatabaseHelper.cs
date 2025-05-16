@@ -20,29 +20,28 @@ namespace Finance.Repository.SqlServer
             _sqlConnection = new SqlConnection(_connectionString);
         }
 
-        private async Task OpenConnectionAsync()
+        private async Task OpenConnectionAsync(CancellationToken token)
         {
             if(_sqlConnection.State != System.Data.ConnectionState.Open)
             {
-                await _sqlConnection.OpenAsync();
+                await _sqlConnection.OpenAsync(token);
             }
         }
 
-        public async Task<List<T>> ExecuteQuery<T>(string query, Func<SqlDataReader, T> mapFunction, params SqlParameter[] parameters)
+        public async Task<List<T>> ExecuteQuery<T>(string query, Func<SqlDataReader, T> mapFunction, CancellationToken token, params SqlParameter[] parameters)
         {
-
             List<T> results = [];
             try
             {
-                await OpenConnectionAsync();
+                await OpenConnectionAsync(token);
                 using SqlCommand command = new(query, _sqlConnection);
                 if (parameters != null && parameters.Length > 0)
                 {
                     command.Parameters.AddRange(parameters);
                 }
 
-                using SqlDataReader reader = command.ExecuteReader();
-                while (reader.Read())
+                using SqlDataReader reader = await command.ExecuteReaderAsync(token);
+                while (await reader.ReadAsync(token))
                 {
                     results.Add(mapFunction(reader));
                 }
@@ -54,18 +53,18 @@ namespace Finance.Repository.SqlServer
             return results;
         }
 
-        public async Task<int> ExecuteNonQuery(string query, params SqlParameter[] parameters)
+        public async Task<int> ExecuteNonQuery(string query, CancellationToken token, params SqlParameter[] parameters)
         {
             int rowsAffected = 0;
             try
             {
-                await OpenConnectionAsync();
+                await OpenConnectionAsync(token);
                 using SqlCommand command = new(query, _sqlConnection);
                 if (parameters != null && parameters.Length > 0)
                 {
                     command.Parameters.AddRange(parameters);
                 }
-                rowsAffected = await command.ExecuteNonQueryAsync();
+                rowsAffected = await command.ExecuteNonQueryAsync(token);
             }
             catch (Exception)
             {
@@ -74,17 +73,17 @@ namespace Finance.Repository.SqlServer
             return rowsAffected;
         }
 
-        public async Task<T> ExecuteScalar<T>(string query, params SqlParameter[] parameters)
+        public async Task<T> ExecuteScalar<T>(string query, CancellationToken token, params SqlParameter[] parameters)
         {
             try
             {
-                await OpenConnectionAsync();
+                await OpenConnectionAsync(token);
                 using SqlCommand command = new(query, _sqlConnection);
                 if (parameters != null && parameters.Length > 0)
                 {
                     command.Parameters.AddRange(parameters);
                 }
-                var result = await command.ExecuteScalarAsync();
+                var result = await command.ExecuteScalarAsync(token);
                 if (result != null && result != DBNull.Value)
                 {
                     return (T)Convert.ChangeType(result, typeof(T));
@@ -98,20 +97,20 @@ namespace Finance.Repository.SqlServer
         }
 
 
-        public async Task<Dictionary<string, object>> ExecuteProcedure(string procedureName, params SqlParameter[] parameters)
+        public async Task<Dictionary<string, object>> ExecuteProcedure(string procedureName, CancellationToken token, params SqlParameter[] parameters)
         {
             Dictionary<string, object> results = [];
             try
             {
-                await OpenConnectionAsync();
+                await OpenConnectionAsync(token);
                 using SqlCommand command = new(procedureName, _sqlConnection);
                 command.CommandType = System.Data.CommandType.StoredProcedure;
                 if (parameters != null && parameters.Length > 0)
                 {
                     command.Parameters.AddRange(parameters);
                 }
-                using SqlDataReader reader = command.ExecuteReader();
-                while (reader.Read())
+                using SqlDataReader reader = await command.ExecuteReaderAsync(token);
+                while (await reader.ReadAsync(token))
                 {
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
@@ -126,9 +125,9 @@ namespace Finance.Repository.SqlServer
             return results;
         }
 
-        public async Task<bool> ExecuteTransaction(List<(string, SqlParameter[] parameters)> queries)
+        public async Task<bool> ExecuteTransaction(List<(string, SqlParameter[] parameters)> queries, CancellationToken token)
         {
-            await OpenConnectionAsync();
+            await OpenConnectionAsync(token);
             using SqlTransaction transaction = _sqlConnection.BeginTransaction();
             try
             {
@@ -139,14 +138,14 @@ namespace Finance.Repository.SqlServer
                     {
                         command.Parameters.AddRange(parameters);
                     }
-                    command.ExecuteNonQuery();
+                    await command.ExecuteReaderAsync(token);
                 }
-                transaction.Commit();
+                await transaction.CommitAsync(token);
                 return true;
             }
             catch (Exception)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync(token);
                 return false;
             }
         }

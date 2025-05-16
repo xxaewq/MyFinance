@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Finance.Repository.SqlServer\Finance.Repository.SqlServer.csproj" />
     <ProjectReference Include="..\Finance.Shared\Finance.Shared.csproj" />
   </ItemGroup>
 
