@@ -8,21 +8,22 @@ using System.Threading.Tasks;
 
 namespace Finance.Api.Controllers.Master
 {
-    [Route("api/master/[controller]")]
+    [Route("api/master")]
     [ApiController]
-    public class TypeController(ITypeRepository typeRepository
+    public class TypeController(IMstTypeRepository typeRepository
         , ILogger<TypeController> logger
         , IValidator<MstTypeCreateModel> validatorCreate
         , IValidator<MstTypeUpdateModel> validatorUpdate
         , IMapper mapper) : ControllerBase
     {
-        private readonly ITypeRepository _typeRepository = typeRepository;
+        private readonly IMstTypeRepository _typeRepository = typeRepository;
         private readonly ILogger<TypeController> _logger = logger;
         private readonly IValidator<MstTypeCreateModel> _validatorCreate = validatorCreate;
         private readonly IValidator<MstTypeUpdateModel> _validatorUpdate = validatorUpdate;
         private readonly IMapper _mapper = mapper;
 
         [HttpGet]
+        [Route("types")]
         public async Task<IActionResult> GetAllTypes(CancellationToken token = default)
         {
             _logger.LogInformation("GetAllTypes called");
@@ -31,9 +32,10 @@ namespace Finance.Api.Controllers.Master
             return Ok(typeModels);
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("type/{id:guid}")]
         public async Task<IActionResult> GetTypeById(Guid id, CancellationToken token = default)
         {
+            _logger.LogInformation("GetTypeById called with id: {id}", id);
             var type = await _typeRepository.GetTypeById(id, token);
             if (type == null)
             {
@@ -44,15 +46,18 @@ namespace Finance.Api.Controllers.Master
         }
 
         [HttpPost]
+        [Route("type")]
         public async Task<IActionResult> CreateType([FromBody] MstTypeCreateModel mstType, CancellationToken token = default)
         {
+            _logger.LogInformation("CreateType called");
             var validationResult = await _validatorCreate.ValidateAsync(mstType, token);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 return BadRequest(errors);
             }
-
+            string createdBy = User.Identity?.Name ?? "Unknown";
+            mstType.CreatedBy = createdBy;
             var type = _mapper.Map<MstType>(mstType);
 
             bool isCreated = await _typeRepository.CreateType(type, token);
@@ -66,17 +71,20 @@ namespace Finance.Api.Controllers.Master
             return Ok(typeResponseModel);
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("type/{id:guid}")]
         public async Task<IActionResult> UpdateType(Guid id, [FromBody] MstTypeUpdateModel mstType, CancellationToken token = default)
         {
+            _logger.LogInformation("UpdateType called with id: {id}", id);
             var validationResult = await _validatorUpdate.ValidateAsync(mstType, token);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 return BadRequest(errors);
             }
+            string updatedBy = User.Identity?.Name ?? "Unknown";
+            mstType.UpdatedBy = updatedBy;
+            mstType.Id = id;
             var type = _mapper.Map<MstType>(mstType);
-            type.Id = id;
 
             bool isUpdated = await _typeRepository.UpdateType(type, token);
             if (!isUpdated)
@@ -86,15 +94,17 @@ namespace Finance.Api.Controllers.Master
             var typeResponseModel = _mapper.Map<MstTypeResponseModel>(type);
             return Ok(typeResponseModel);
         }
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("type/{id:guid}")]
         public async Task<IActionResult> DeleteType(Guid id, CancellationToken token = default)
         {
-            bool isDeleted = await _typeRepository.DeleteType(id, token);
+            _logger.LogInformation("DeleteType called with id: {id}", id);
+            string deleteBy = User.Identity?.Name ?? "Unknown";
+            bool isDeleted = await _typeRepository.DeleteType(id, deleteBy, token);
             if (!isDeleted)
             {
                 return BadRequest("Type could not be deleted.");
             }
-            return Ok(id);
+            return Ok();
         }
     }
 }

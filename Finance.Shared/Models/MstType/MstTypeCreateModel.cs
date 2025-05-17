@@ -2,13 +2,11 @@
 
 namespace Finance.Shared.Models.MstType
 {
-    public class MstTypeCreateModel
+    public class MstTypeCreateModel : MstTypeModel
     {
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
-        [JsonPropertyName("type_name")]
-        public string TypeName { get; set; } = null!;
-        [JsonPropertyName("description")]
-        public string Description { get; set; } = default!;
+        [JsonPropertyName("created_by")]
+        public string? CreatedBy { get; set; }
+        [JsonPropertyName("create_at")]
+        public DateTime? CreateAt { get; set; }
     }
 }

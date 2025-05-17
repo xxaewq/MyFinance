@@ -1,6 +1,6 @@
 ﻿namespace Finance.Shared.Models.MstType
 {
-    public class MstTypeResponseModel : MstTypeCreateModel
+    public class MstTypeResponseModel : MstTypeModel
     {
     }
 }

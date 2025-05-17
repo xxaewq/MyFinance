@@ -10,12 +10,17 @@ namespace Finance.Api.Mapper
         {
             CreateMap<MstType, MstTypeResponseModel>().ReverseMap();
 
-            CreateMap<MstType, MstTypeCreateModel>().ForMember(dest => dest.Id, opt => opt.Ignore());
+            CreateMap<MstType, MstTypeCreateModel>();
             CreateMap<MstTypeCreateModel, MstType>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()));
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
+            .ForMember(dest => dest.CreateAt, opt => opt.MapFrom(src => DateTime.Now))
+            .ForMember(dest => dest.Enable, opt => opt.MapFrom(src => true));
 
-            CreateMap<MstType, MstTypeUpdateModel>().ForMember(dest => dest.Id, opt => opt.Ignore());
-            CreateMap<MstTypeUpdateModel, MstType>();
+            CreateMap<MstType, MstTypeUpdateModel>();
+            CreateMap<MstTypeUpdateModel, MstType>()
+            .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.Now));
+
+            CreateMap<MstType, MstTypeResponseModel>().ReverseMap();
         }
     }
 }

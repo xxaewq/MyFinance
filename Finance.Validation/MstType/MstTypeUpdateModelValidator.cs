@@ -3,12 +3,12 @@ using Finance.Shared.Models.MstType;
 using FluentValidation;
 using Microsoft.Data.SqlClient;
 
-namespace Finance.Validation;
+namespace Finance.Validation.MstType;
 
-public class TypeUpdateModelValidator : AbstractValidator<MstTypeUpdateModel>
+public class MstTypeUpdateModelValidator : AbstractValidator<MstTypeUpdateModel>
 {
     private readonly SqlServerDatabaseHelper _helper;
-    public TypeUpdateModelValidator(SqlServerDatabaseHelper helper)
+    public MstTypeUpdateModelValidator(SqlServerDatabaseHelper helper)
     {
         _helper = helper;
 
@@ -23,7 +23,7 @@ public class TypeUpdateModelValidator : AbstractValidator<MstTypeUpdateModel>
             .WithMessage("Type name and description combination must be unique.");
     }
 
-    private async Task<bool> BeUniqueNameAsync(string typeName, string description, CancellationToken token)
+    private async Task<bool> BeUniqueNameAsync(string typeName, string? description, CancellationToken token)
     {
         string sql = "SELECT TOP 1 1 FROM MstType WHERE TypeName = @TypeName AND Description = @Description";
         var parameters = new[]

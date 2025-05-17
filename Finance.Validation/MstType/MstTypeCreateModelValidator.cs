@@ -3,12 +3,12 @@ using Finance.Shared.Models.MstType;
 using FluentValidation;
 using Microsoft.Data.SqlClient;
 
-namespace Finance.Validation;
+namespace Finance.Validation.MstType;
 
-public class TypeCreateModelValidator : AbstractValidator<MstTypeCreateModel>
+public class MstTypeCreateModelValidator : AbstractValidator<MstTypeCreateModel>
 {
     private readonly SqlServerDatabaseHelper _helper;
-    public TypeCreateModelValidator(SqlServerDatabaseHelper helper)
+    public MstTypeCreateModelValidator(SqlServerDatabaseHelper helper)
     {
         _helper = helper;
 
