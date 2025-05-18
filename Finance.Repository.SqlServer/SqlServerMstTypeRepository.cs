@@ -13,7 +13,7 @@ namespace Finance.Repository.SqlServer
     {
         private readonly SqlServerDatabaseHelper _helper = helper;
 
-        public async Task<bool> CreateType(MstType type, CancellationToken token)
+        public async Task<bool> CreateTypeAsync(MstType type, CancellationToken token)
         {
             string sql = "INSERT INTO MstType (Id, TypeName, Description, Enable, CreateAt, CreateBy) " +
                 "VALUES (@Id, @TypeName, @Description, @Enable, @CreateAt, @CreateBy)";
@@ -26,10 +26,10 @@ namespace Finance.Repository.SqlServer
                 new("@CreateAt", type.CreateAt),
                 new("@CreateBy", type.CreatedBy)
             };
-            return await _helper.ExecuteNonQuery(sql, token, parameters) > 0;
+            return await _helper.ExecuteNonQueryAsync(sql, token, parameters) > 0;
         }
 
-        public async Task<bool> DeleteType(Guid id,string deleteBy, CancellationToken token)
+        public async Task<bool> DeleteTypeAsync(Guid id,string deleteBy, CancellationToken token)
         {
             string sql = "UPDATE MstType SET Enable = @Enable, DeleteBy = @DeleteBy, DeleteAt = @DeleteAt WHERE Id = @Id";
             var parameters = new SqlParameter[]
@@ -39,13 +39,13 @@ namespace Finance.Repository.SqlServer
                 new("@DeleteBy", deleteBy),
                 new("@DeleteAt", DateTime.Now)
             };
-            return await _helper.ExecuteNonQuery(sql, token, parameters) > 0;
+            return await _helper.ExecuteNonQueryAsync(sql, token, parameters) > 0;
         }
 
-        public async Task<List<MstType>> GetAllTypes(CancellationToken token)
+        public async Task<List<MstType>> GetAllsAsync(CancellationToken token)
         {
             string sql = "SELECT Id, TypeName, Description FROM MstType where Enable = 'true'";
-            var types = await _helper.ExecuteQuery(sql, reader => new MstType
+            var types = await _helper.ExecuteQueryAsync(sql, reader => new MstType
             {
                 Id = reader.GetGuid(0),
                 TypeName = reader.GetString(1),
@@ -54,23 +54,23 @@ namespace Finance.Repository.SqlServer
             return types;
         }
 
-        public async Task<MstType?> GetTypeById(Guid id, CancellationToken token)
+        public async Task<MstType?> GetByIdAsync(Guid id, CancellationToken token)
         {
             string sql = "SELECT * FROM MstType WHERE Id = @Id";
             var parameters = new SqlParameter[]
             {
                 new("@Id", id)
             };
-            var type = await _helper.ExecuteQuery(sql, reader => new MstType
+            var type = await _helper.ExecuteQuerySingleOrDefaultAsync(sql, reader => new MstType
             {
                 Id = reader.GetGuid(0),
                 TypeName = reader.GetString(1),
                 Description = reader.GetString(2)
             }, token, parameters);
-            return type.FirstOrDefault();
+            return type;
         }
 
-        public async Task<bool> UpdateType(MstType type, CancellationToken token)
+        public async Task<bool> UpdateTypeAsync(MstType type, CancellationToken token)
         {
             string sql = "UPDATE MstType SET TypeName = @TypeName, Description = @Description, UpdateBy = @UpdateBy, UpdateAt = @UpdateAt WHERE Id = @Id";
             var parameters = new SqlParameter[]
@@ -81,7 +81,7 @@ namespace Finance.Repository.SqlServer
                 new("@UpdateBy", type.UpdatedBy),
                 new("@UpdateAt", type.UpdateAt)
             };
-            return await _helper.ExecuteNonQuery(sql, token, parameters) > 0;
+            return await _helper.ExecuteNonQueryAsync(sql, token, parameters) > 0;
         }
     }
 }

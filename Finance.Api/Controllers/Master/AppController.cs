@@ -1,74 +1,101 @@
 ﻿using AutoMapper;
 using Finance.Repository.Abstraction;
+using Finance.Repository.Abstraction.Entities;
 using Finance.Shared.Models.MstApp;
-using Microsoft.AspNetCore.Http;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 using System.Threading.Tasks;
 
-namespace Finance.Api.Controllers.Master
+namespace Finance.Api.Controllers.Master;
+
+[Route("api/master")]
+[ApiController]
+public class AppController(IMstAppRepository appRepository
+    , IMapper mapper
+    , IValidator<MstAppCreateModel> validatorCreate
+    , IValidator<MstAppUpdateModel> validatorUpdate) : ControllerBase
 {
-    [Route("api/master")]
-    [ApiController]
-    public class AppController(IMstAppRepository appRepository, IMapper mapper) : ControllerBase
+    private readonly IMstAppRepository _appRepository = appRepository;
+    private readonly IMapper _mapper = mapper;
+    private readonly IValidator<MstAppCreateModel> _validatorCreate = validatorCreate;
+    private readonly IValidator<MstAppUpdateModel> _validatorUpdate = validatorUpdate;
+
+    [HttpGet]
+    [Route("apps")]
+    public async Task<IActionResult> GetAllApps(CancellationToken token = default)
     {
-        private readonly IMstAppRepository _appRepository = appRepository;
-        private readonly IMapper _mapper = mapper;
+        var apps = await _appRepository.GetAllAsync(token);
+        var appModels = _mapper.Map<List<MstAppResponseModel>>(apps);
+        return Ok(appModels);
+    }
+    [HttpGet]
+    [Route("app/{id:guid}")]
+    public async Task<IActionResult> GetAppById(Guid id, CancellationToken token = default)
+    {
+        var app = await _appRepository.GetByIdAsync(id, token);
+        if (app == null)
+        {
+            return NotFound();
+        }
+        var appModel = _mapper.Map<MstAppResponseModel>(app);
+        return Ok(appModel);
+    }
 
-        [HttpGet]
-        [Route("apps")]
-        public async Task<IActionResult> GetAllApps(CancellationToken token)
+    [HttpPost]
+    [Route("app")]
+    public async Task<IActionResult> CreateApp([FromBody] MstAppCreateModel mstApp, CancellationToken token = default)
+    {
+        var validationResult = await _validatorCreate.ValidateAsync(mstApp, token);
+        if (!validationResult.IsValid)
         {
-            var apps = await _appRepository.GetAllAsync(token);
-            var appModels = _mapper.Map<List<MstAppResponseModel>>(apps);
-            return Ok(appModels);
+            var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+            return BadRequest(errors);
         }
-        [HttpGet]
-        [Route("app/{id:guid}")]
-        public IActionResult GetAppById(Guid id)
+        string createdBy = User.Identity?.Name ?? "Unknown";
+        mstApp.CreateBy = createdBy;
+        var app = _mapper.Map<MstApp>(mstApp);
+        bool isCreated = await _appRepository.CreateAsync(app, token);
+        if (!isCreated)
         {
-            // Simulate fetching data from a repository
-            var app = "App" + id.ToString();
-            if (app == null)
-            {
-                return NotFound("App could not be found");
-            }
-            return Ok(app);
+            return BadRequest("App could not be created.");
         }
+        var appModel = _mapper.Map<MstAppResponseModel>(app);
+        return Ok(appModel);
+    }
 
-        [HttpPost]
-        [Route("app")]
-        public IActionResult CreateApp([FromBody] string app)
+    [HttpPut]
+    [Route("app/{id:guid}")]
+    public async Task<IActionResult> UpdateApp(Guid id, [FromBody] MstAppUpdateModel mstApp, CancellationToken token = default)
+    {
+        var validationResult = await _validatorUpdate.ValidateAsync(mstApp, token);
+        if (!validationResult.IsValid)
         {
-            // Simulate creating an app
-            if (string.IsNullOrEmpty(app))
-            {
-                return BadRequest("App name cannot be empty");
-            }
-            // Simulate saving the app to a repository
-            return CreatedAtAction(nameof(GetAppById), new { id = Guid.NewGuid() }, app);
+            var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+            return BadRequest(errors);
         }
+        string updatedBy = User.Identity?.Name ?? "Unknown";
+        mstApp.UpdateBy = updatedBy;
+        mstApp.Id = id;
+        var app = _mapper.Map<MstApp>(mstApp);
+        bool isUpdated = await _appRepository.UpdateAsync(app, token);
+        if (!isUpdated)
+        {
+            return BadRequest("App could not be updated.");
+        }
+        var appModel = _mapper.Map<MstAppResponseModel>(app);
+        return Ok(appModel);
+    }
 
-        [HttpPut]
-        [Route("app/{id:guid}")]
-        public IActionResult UpdateApp(Guid id, [FromBody] string app)
+    [HttpDelete]
+    [Route("app/{id:guid}")]
+    public async Task<IActionResult> DeleteApp(Guid id, CancellationToken token)
+    {
+        string deletedBy = User.Identity?.Name ?? "Unknown";
+        bool isDeleted = await _appRepository.DeleteAsync(id, deletedBy, token);
+        if (!isDeleted)
         {
-            // Simulate updating an app
-            if (string.IsNullOrEmpty(app))
-            {
-                return BadRequest("App name cannot be empty");
-            }
-            // Simulate saving the updated app to a repository
-            return NoContent();
+            return BadRequest("App could not be deleted.");
         }
-
-        [HttpDelete]
-        [Route("app/{id:guid}")]
-        public IActionResult DeleteApp(Guid id)
-        {
-            // Simulate deleting an app
-            // Simulate removing the app from a repository
-            return NoContent();
-        }
+        return Ok();
     }
 }

@@ -31,7 +31,7 @@ public class MstTypeUpdateModelValidator : AbstractValidator<MstTypeUpdateModel>
            new SqlParameter("@TypeName", typeName),
            new SqlParameter("@Description", description)
         };
-        int result = await _helper.ExecuteScalar<int>(sql, token, parameters);
+        int result = await _helper.ExecuteScalarAsync<int>(sql, token, parameters);
         return result == 0;
     }
 }

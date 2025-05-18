@@ -13,7 +13,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddTransient(provider =>
+builder.Services.AddScoped(provider =>
         new SqlServerDatabaseHelper(builder.Configuration.GetConnectionString("FinanceDb") ?? throw new Exception ("Finance Db connection string is not found")));
 
 builder.Services.AddDependencyInjectionServiceForRepository();

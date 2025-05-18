@@ -27,7 +27,7 @@ public class MstTypeCreateModelValidator : AbstractValidator<MstTypeCreateModel>
         {
             new SqlParameter("@TypeName", typeName)
         };
-        int result = await _helper.ExecuteScalar<int>(sql,token, parameters);
+        int result = await _helper.ExecuteScalarAsync<int>(sql,token, parameters);
         return result == 0;
     }
 }

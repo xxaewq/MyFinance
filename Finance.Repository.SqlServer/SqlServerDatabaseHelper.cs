@@ -28,7 +28,7 @@ namespace Finance.Repository.SqlServer
             }
         }
 
-        public async Task<List<T>> ExecuteQuery<T>(string query, Func<SqlDataReader, T> mapFunction, CancellationToken token, params SqlParameter[] parameters)
+        public async Task<List<T>> ExecuteQueryAsync<T>(string query, Func<SqlDataReader, T> mapFunction, CancellationToken token, params SqlParameter[] parameters)
         {
             List<T> results = [];
             try
@@ -53,7 +53,31 @@ namespace Finance.Repository.SqlServer
             return results;
         }
 
-        public async Task<int> ExecuteNonQuery(string query, CancellationToken token, params SqlParameter[] parameters)
+        public async Task<T?> ExecuteQuerySingleOrDefaultAsync<T>(string query, Func<SqlDataReader, T> mapFunction, CancellationToken token, params SqlParameter[] parameters)
+        {
+            T? result = default;
+            try
+            {
+                await OpenConnectionAsync(token);
+                using SqlCommand command = new(query, _sqlConnection);
+                if (parameters != null && parameters.Length > 0)
+                {
+                    command.Parameters.AddRange(parameters);
+                }
+                using SqlDataReader reader = await command.ExecuteReaderAsync(token);
+                if (await reader.ReadAsync(token))
+                {
+                    result = mapFunction(reader);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return result;
+        }
+
+        public async Task<int> ExecuteNonQueryAsync(string query, CancellationToken token, params SqlParameter[] parameters)
         {
             int rowsAffected = 0;
             try
@@ -73,7 +97,7 @@ namespace Finance.Repository.SqlServer
             return rowsAffected;
         }
 
-        public async Task<T> ExecuteScalar<T>(string query, CancellationToken token, params SqlParameter[] parameters)
+        public async Task<T> ExecuteScalarAsync<T>(string query, CancellationToken token, params SqlParameter[] parameters)
         {
             try
             {
@@ -97,7 +121,7 @@ namespace Finance.Repository.SqlServer
         }
 
 
-        public async Task<Dictionary<string, object>> ExecuteProcedure(string procedureName, CancellationToken token, params SqlParameter[] parameters)
+        public async Task<Dictionary<string, object>> ExecuteProcedureAsync(string procedureName, CancellationToken token, params SqlParameter[] parameters)
         {
             Dictionary<string, object> results = [];
             try
@@ -125,7 +149,7 @@ namespace Finance.Repository.SqlServer
             return results;
         }
 
-        public async Task<bool> ExecuteTransaction(List<(string, SqlParameter[] parameters)> queries, CancellationToken token)
+        public async Task<bool> ExecuteTransactionAsync(List<(string, SqlParameter[] parameters)> queries, CancellationToken token)
         {
             await OpenConnectionAsync(token);
             using SqlTransaction transaction = _sqlConnection.BeginTransaction();

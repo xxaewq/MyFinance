@@ -1,6 +1,8 @@
 ﻿using Finance.Repository.Abstraction;
 using Finance.Repository.SqlServer;
+using Finance.Shared.Models.MstApp;
 using Finance.Shared.Models.MstType;
+using Finance.Validation.MstApp;
 using Finance.Validation.MstType;
 using FluentValidation;
 
@@ -18,6 +20,9 @@ namespace Finance.Api.Extension
         {
             services.AddScoped<IValidator<MstTypeCreateModel>, MstTypeCreateModelValidator>();
             services.AddScoped<IValidator<MstTypeUpdateModel>, MstTypeUpdateModelValidator>();
+
+            services.AddScoped<IValidator<MstAppCreateModel>, MstAppCreateModelValidator>();
+            services.AddScoped<IValidator<MstAppUpdateModel>, MstAppUpdateModelValidator>();
             return services;
         }
     }
