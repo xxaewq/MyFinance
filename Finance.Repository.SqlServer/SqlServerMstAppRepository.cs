@@ -45,7 +45,11 @@ namespace Finance.Repository.SqlServer
 
         public async Task<List<MstApp>> GetAllAsync(CancellationToken token)
         {
-            string sql = "SELECT Id, TypeApp, NameApp, Description FROM MstApp";
+            string sql = "SELECT Id, TypeApp, NameApp, Description FROM MstApp WHERE Enable = @Enable";
+            var parameters = new SqlParameter[]
+            {
+                new("@Enable", true)
+            };
             var result = await _helper.ExecuteQueryAsync(sql, reader => new MstApp
             {
                 Id = reader.GetGuid(0),
@@ -59,10 +63,11 @@ namespace Finance.Repository.SqlServer
 
         public async Task<MstApp?> GetByIdAsync(Guid id, CancellationToken token)
         {
-            string sql = "SELECT Id, TypeApp, NameApp, Description FROM MstApp WHERE Id = @Id";
+            string sql = "SELECT Id, TypeApp, NameApp, Description FROM MstApp WHERE Id = @Id AND Enable = @Enable";
             var parameters = new SqlParameter[]
             {
-                new("@Id", id)
+                new("@Id", id),
+                new("@Enable", true)
             };
             var result = await _helper.ExecuteQuerySingleOrDefaultAsync(sql, reader => new MstApp
             {
@@ -77,7 +82,7 @@ namespace Finance.Repository.SqlServer
         public async Task<bool> UpdateAsync(MstApp app, CancellationToken token)
         {
             string sql = "UPDATE MstApp SET TypeApp = @TypeApp, NameApp = @NameApp, Description = @Description, " +
-                "UpdateAt = @UpdateAt, UpdateBy = @UpdateBy WHERE Id = @Id";
+                "UpdateAt = @UpdateAt, UpdateBy = @UpdateBy WHERE Id = @Id and Enable = @Enable";
             var parameters = new SqlParameter[]
             {
                 new("@Id", app.Id),
@@ -85,7 +90,8 @@ namespace Finance.Repository.SqlServer
                 new("@NameApp", app.NameApp),
                 new("@Description", app.Description),
                 new("@UpdateAt", app.UpdateAt),
-                new("@UpdateBy", app.UpdateBy)
+                new("@UpdateBy", app.UpdateBy),
+                new("@Enable", true)
             };
             return await _helper.ExecuteNonQueryAsync(sql, token, parameters) > 0;
         }

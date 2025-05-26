@@ -5,7 +5,7 @@ namespace Finance.Shared.Models.MstType
     public class MstTypeCreateModel : MstTypeModel
     {
         [JsonPropertyName("created_by")]
-        public string? CreatedBy { get; set; }
+        public string? CreateBy { get; set; }
         [JsonPropertyName("create_at")]
         public DateTime? CreateAt { get; set; }
     }

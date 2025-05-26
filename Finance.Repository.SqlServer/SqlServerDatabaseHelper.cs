@@ -142,9 +142,9 @@ namespace Finance.Repository.SqlServer
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                results["Exception"] = ex.Message;
             }
             return results;
         }

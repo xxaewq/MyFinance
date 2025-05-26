@@ -14,6 +14,8 @@ namespace Finance.Api.Extension
         {
             services.AddScoped<IMstTypeRepository, SqlServerMstTypeRepository>();
             services.AddScoped<IMstAppRepository, SqlServerMstAppRepository>();
+            services.AddScoped<IMstUserRepository, SqlServerMstUserRepository>();
+
             return services;
         }
         public static IServiceCollection AddDependencyInjectionServiceForValidation(this IServiceCollection services)

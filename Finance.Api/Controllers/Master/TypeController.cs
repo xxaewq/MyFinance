@@ -57,7 +57,7 @@ namespace Finance.Api.Controllers.Master
                 return BadRequest(errors);
             }
             string createdBy = User.Identity?.Name ?? "Unknown";
-            mstType.CreatedBy = createdBy;
+            mstType.CreateBy = createdBy;
             var type = _mapper.Map<MstType>(mstType);
 
             bool isCreated = await _typeRepository.CreateTypeAsync(type, token);
