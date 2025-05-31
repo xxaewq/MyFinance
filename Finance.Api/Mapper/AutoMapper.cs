@@ -43,6 +43,9 @@ namespace Finance.Api.Mapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
                 .ForMember(dest => dest.CreateAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.Enable, opt => opt.MapFrom(src => true));
+
+            CreateMap<MstUserUpdateInforModel, MstUser>()
+                .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.Now));
             #endregion
         }
     }

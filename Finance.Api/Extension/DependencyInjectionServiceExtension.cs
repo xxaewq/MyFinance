@@ -2,8 +2,10 @@
 using Finance.Repository.SqlServer;
 using Finance.Shared.Models.MstApp;
 using Finance.Shared.Models.MstType;
+using Finance.Shared.Models.MstUser;
 using Finance.Validation.MstApp;
 using Finance.Validation.MstType;
+using Finance.Validation.MstUser;
 using FluentValidation;
 
 namespace Finance.Api.Extension
@@ -25,6 +27,9 @@ namespace Finance.Api.Extension
 
             services.AddScoped<IValidator<MstAppCreateModel>, MstAppCreateModelValidator>();
             services.AddScoped<IValidator<MstAppUpdateModel>, MstAppUpdateModelValidator>();
+
+            services.AddScoped<IValidator<MstUserCreateModel>, MstUserCreateModelValidator>();
+            services.AddScoped<IValidator<MstUserUpdateInforModel>, MstUserUpdateInforModelValidator>();
             return services;
         }
     }

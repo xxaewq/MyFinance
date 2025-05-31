@@ -12,5 +12,9 @@ namespace Finance.Repository.Abstraction
         Task<bool> CreateUserAsync(MstUser user, CancellationToken token);
         Task<List<MstUser>> GetAllUsersAsync(CancellationToken token);
         Task<MstUser?> GetByIdAsync(Guid id, CancellationToken token);
+        Task<bool> UpdatePasswordAsync(MstUser user, CancellationToken token);
+        Task<bool> UpdateInforAsync(MstUser user, CancellationToken token);
+        Task<bool> DeleteUserAsync(Guid id, string deletedBy, CancellationToken token);
+        Task<int> CheckPasswordAsync(string username, string password, CancellationToken token);
     }
 }

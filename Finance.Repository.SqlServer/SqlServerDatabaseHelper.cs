@@ -145,6 +145,7 @@ namespace Finance.Repository.SqlServer
             catch (Exception ex)
             {
                 results["Exception"] = ex.Message;
+                // Optionally log the exception or handle it as needed
             }
             return results;
         }
