@@ -1,9 +1,5 @@
 using Finance.Api.Extension;
-using Finance.Repository.Abstraction;
 using Finance.Repository.SqlServer;
-using Finance.Shared.Models.MstType;
-using Finance.Validation.MstType;
-using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -17,6 +17,7 @@ namespace Finance.Api.Extension
             services.AddScoped<IMstTypeRepository, SqlServerMstTypeRepository>();
             services.AddScoped<IMstAppRepository, SqlServerMstAppRepository>();
             services.AddScoped<IMstUserRepository, SqlServerMstUserRepository>();
+            services.AddScoped<IUserBalanceRepository, SqlServerUserBalanceRepository>();
 
             return services;
         }
@@ -30,6 +31,7 @@ namespace Finance.Api.Extension
 
             services.AddScoped<IValidator<MstUserCreateModel>, MstUserCreateModelValidator>();
             services.AddScoped<IValidator<MstUserUpdateInforModel>, MstUserUpdateInforModelValidator>();
+
             return services;
         }
     }

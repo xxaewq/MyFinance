@@ -3,6 +3,7 @@ using Finance.Repository.Abstraction.Entities;
 using Finance.Shared.Models.MstApp;
 using Finance.Shared.Models.MstType;
 using Finance.Shared.Models.MstUser;
+using Finance.Shared.Models.UserBalance;
 
 namespace Finance.Api.Mapper
 {
@@ -46,6 +47,13 @@ namespace Finance.Api.Mapper
 
             CreateMap<MstUserUpdateInforModel, MstUser>()
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.Now));
+            #endregion
+
+            #region UserBalance
+            CreateMap<UserBalanceCreateModel, UserBalance>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
+                .ForMember(dest => dest.CreateAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.Enable, opt => opt.MapFrom(src => true));
             #endregion
         }
     }
